@@ -1,16 +1,14 @@
 # Step 1: Define the main class - Primary Processes Modules
-
-
 class Ppm:
     def __init__(self, p1, p2):
         self.ppm_1 = p1 # Initialize with the name of the processes
         self.ppm_2 = p2
         
     def display_process(self):
-        print(f"The Primary Process modules used in the transformation are: {self.ppm_1} and {self.ppm_2}") # Step 1: Two main ppm
+        print(f"The Primary Process modules used in the transformation are: {self.ppm_1} and {self.ppm_2}")
 
-
-class BasicOperation(Ppm):
+# Define child class - Basic operations
+class BasicOperation (Ppm):
 
     # Step 5: Constructor for the child class
     def __init__(self, press, pull):
