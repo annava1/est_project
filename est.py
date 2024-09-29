@@ -1,19 +1,20 @@
-# Define the main class - Primary Processes Modules
+# Define a class - Primary Processes Modules
 class Ppm:
+
     def __init__(self, p1, p2):
-        self.ppm_1 = p1  # Initialize with the name of the primary processes
+        self.ppm_1 = p1  # Initialize with the name of the primary processes forming and curing.
         self.ppm_2 = p2
 
     def display_process(self):
         print(f"The Primary Process modules used in the transformation are {self.ppm_1} and {self.ppm_2}")
 
 
-# Define class Basic operations
+# Define a class - Basic operations
 class Bop:
 
     # Constructor for the class
     def __init__(self, press, pull):
-        self.bop_1 = press  # Initialize with the name of the processes
+        self.bop_1 = press  # Initialize with the name of the processes.
         self.bop_2 = pull
 
         # super().__init__("forming", "curing")
@@ -22,8 +23,8 @@ class Bop:
         print(f"The basic operations used in the primary processes are  {self.bop_1} and {self.bop_2}")
 
     def press(self):
-        compressive_strength = 335  # Default value for compressive strength
-        area = 2410335.18  # Default value for area
+        compressive_strength = 335  # Default value for compressive strength from Excel sheet.
+        area = 2410335.18  # Default value for area from Excel sheet.
         s_d = 10
 
         # Step 2: Get the user input for the parameter
@@ -91,6 +92,11 @@ class Lop:
         # Print the result
         print(f"The oil leak rate is: {q:.6f}")
 
+        #Leaking power loss
+        p = delta_p * q
+
+        # Print the result
+        print(f"The power loss due to leaking oil is: {p:.6f}")
 
 if __name__ == "__main__":
     ppm = Ppm("forming", "curing")
@@ -104,9 +110,8 @@ if __name__ == "__main__":
 
     lop = Lop()
     lop.para()
-    # The test.
-    # The test 2.
-    # The test 3.
+
+
 
 
 
