@@ -37,7 +37,7 @@ class Bop:
             return c * a * s
             # Step 2: Return the calculated result
 
-        w = 1
+
         w = calculate_w(compressive_strength, area, s_d)
         w_u = calculate_w(cs_u, area_u, s_u)
 
@@ -67,6 +67,23 @@ class Bop:
 
 
 class Lop:
+
+    def __init__(self, num_stages):
+        self.num_stages = num_stages
+        self.pipe_lengths = []
+        self.inner_diameters = []
+        self.friction_factors = []
+        self.local_resistance_factors = []
+        self.valve_areas = []
+        self.flow_coefficients = []
+        self.num_valves = []
+        self.oil_density = None
+        self.flow_rates = []
+        self.slider_displacements = []
+        self.stage_times = []
+        self.piston_areas = []
+
+    #Leakage loss due to the lubricating oil
 
     def para(self):
         b = float(input("Enter the width of the gap (b): "))
@@ -98,6 +115,63 @@ class Lop:
         # Print the result
         print(f"The power loss due to leaking oil is: {p:.6f}")
 
+        #Pressure loss in the Hydraulic pressure
+
+    def hp_para(self):
+        self.oil_density = float(input("Enter the oil density (kg/m^3): "))
+        for j in range(self.num_stages):
+            print(f"Enter data for stage {j + 1}:")
+            self.pipe_lengths.append(float(input(f"Pipe length (L) for stage {j + 1} (m): ")))
+            self.inner_diameters.append(float(input(f"Inner diameter (d) for stage {j + 1} (m): ")))
+            self.friction_factors.append(float(input(f"Friction loss factor (λ) for stage {j + 1}: ")))
+            self.local_resistance_factors.append(float(input(f"Local resistance factor (ζ) for stage {j + 1}: ")))
+            self.num_valves.append(int(input(f"Number of valves (b_j) for stage {j + 1}: ")))
+            self.valve_areas.append(float(input(f"Valve area (A_0) for stage {j + 1} (m^2): ")))
+            self.flow_coefficients.append(float(input(f"Flow coefficient (C_d) for stage {j + 1}: ")))
+            self.piston_areas.append(float(input(f"Piston area (A_j) for stage {j + 1} (m^2): ")))
+            self.slider_displacements.append(float(input(f"Slider displacement (l_j) for stage {j + 1} (m): ")))
+            self.stage_times.append(float(input(f"Time for stage (t_j) for stage {j + 1} (s): ")))
+
+    def calculate_flow_rate(self, j):
+        # Calculate the flow rate q_j for stage j
+        return self.piston_areas[j] * self.slider_displacements[j] / self.stage_times[j]
+
+    def calculate_velocity(self, j, q_j):
+        # Calculate the average flow velocity v_j for stage j
+        A_pipe = 3.14159 * (self.inner_diameters[j] / 2) ** 2  # Cross-sectional area of the pipe
+        return q_j / A_pipe
+
+    def calculate_piping_loss(self, j, v_j):
+        # Calculate the pressure loss in the piping components Δp for stage j
+        friction_loss = (self.friction_factors[j] * self.pipe_lengths[j] * self.oil_density * v_j ** 2) / (
+                    2 * self.inner_diameters[j])
+        local_resistance_loss = (self.local_resistance_factors[j] * self.oil_density * v_j ** 2) / 2
+        return friction_loss + local_resistance_loss
+
+    def calculate_valve_loss(self, j, q_j):
+        # Calculate the pressure loss in the valve components Δp for stage j
+        return (self.oil_density / 2) * (q_j / (self.flow_coefficients[j] * self.valve_areas[j])) ** 2
+
+    def calculate_pressure_loss(self):
+        total_loss = 0
+        for j in range(self.num_stages):
+            # Step 1: Calculate the flow rate q_j for stage j
+            q_j = self.calculate_flow_rate(j)
+
+            # Step 2: Calculate the average velocity v_j for stage j
+            v_j = self.calculate_velocity(j, q_j)
+
+            # Step 3: Calculate the piping loss Δp for stage j
+            piping_loss = self.calculate_piping_loss(j, v_j)
+
+            # Step 4: Calculate the valve loss Δp for stage j
+            valve_loss = self.calculate_valve_loss(j, q_j)
+
+            # Step 5: Sum the total loss for stage j
+            total_loss += piping_loss + self.num_valves[j] * valve_loss
+
+        return total_loss
+
 if __name__ == "__main__":
     ppm = Ppm("forming", "curing")
     ppm.display_process()
@@ -108,8 +182,13 @@ if __name__ == "__main__":
     basic_op.press()
     basic_op.pull()
 
-    lop = Lop()
+    num_stages = int(input("Enter the number of stages in the hydraulic circuit: "))
+    lop = Lop(num_stages)
     lop.para()
+    lop.hp_para()
+    total_pressure_loss = lop.calculate_pressure_loss()
+    print(f"Total Pressure Loss in the Hydraulic Circuit: {total_pressure_loss:.2f} Pa")
+
 
 
 
