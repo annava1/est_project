@@ -1,0 +1,45 @@
+{
+    "parameters": {
+        "press_compressive_strength": {
+            "value": 335,
+            "description": "Compressive strength of the press."
+        },
+        "press_area": {
+            "value": 2410335.18,
+            "description": "Surface area of the press in mm^2."
+        },
+        "press_s": {
+            "value": 78,
+            "description": "Some displacement or distance parameter for pressing."
+        },
+        "pull_tensile_strength": {
+            "value": 200,
+            "description": "Tensile strength during the pull process."
+        },
+        "pull_area": {
+            "value": 500,
+            "description": "Area involved in the pull process."
+        },
+        "pull_s": {
+            "value": 0.655,
+            "description": "Some displacement or distance parameter for pulling."
+        },
+        "T_ambient": {
+            "value": 25,
+            "description": "Ambient temperature in °C."
+        },
+        "T_sky": {
+            "value": null,
+            "description": "Sky temperature in °C; if unknown, the ambient temperature is used."
+        },
+        "epsilon": {
+            "value": 0.1,
+            "description": "Emission factor for thermal radiation (float between 0.0 and 1.0)."
+        },
+        "eta_el": {
+            "value": 0.7,
+            "description": "Efficiency of heating elements (float between 0.0 and 1.0)."
+        }
+    }
+}
+

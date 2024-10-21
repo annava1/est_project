@@ -1,196 +1,119 @@
-# Define a class - Primary Processes Modules
-class Ppm:
+import numpy as np
+import json
+from scipy import constants
+from pint import UnitRegistry, Quantity
+import os
 
-    def __init__(self, p1, p2):
-        self.ppm_1 = p1  # Initialize with the name of the primary processes forming and curing.
-        self.ppm_2 = p2
+with open('input.json', 'r') as input_json:
+    input_data = json.load(input_json)
 
-    def display_process(self):
-        print(f"The Primary Process modules used in the transformation are {self.ppm_1} and {self.ppm_2}")
+class Process_Operation:
+    def __init__(self, params, ureg: UnitRegistry = UnitRegistry(), name: str = None) -> None:
+        self.ureg = ureg
+        self.Q_ = ureg.Quantity
+        
+        if not name:
+            self.json_file_name = 'input_data.json'
+        else:
+            self.json_file_name = name + '.json'
+        
+        self._parse_params(params)
 
+    @staticmethod
+    def get_cls_information():
+        cls_info = {
+            'cls_name': 'Name of the corresponding python-class.',
+            'display_name': 'Name that will be visible for the user',
+            'description_text': 'Description for the given model',
+            'parameter_list': {
+                'Parameter': 'Here all parameters and a description should be entered',
+            }
+        }
+        return cls_info
 
-# Define a class - Basic operations
-class Bop:
+    def _parse_params(self, params):
+        self.params = params
 
-    # Constructor for the class
-    def __init__(self, press, pull):
-        self.bop_1 = press  # Initialize with the name of the processes.
-        self.bop_2 = pull
+    def _get_param(self, key):
+        default_value = [x['default_value'] for x in Process_Operation.get_cls_information()['parameter_list'] if x['name'] == key][0]
+        return self.params.get(key, default_value)
 
-        # super().__init__("forming", "curing")
+    def minimum_energy_demand(self):
+        return self.Q_(0.0, 'kWh')
 
-    def display_process_1(self):
-        print(f"The basic operations used in the primary processes are  {self.bop_1} and {self.bop_2}")
+    def loss_energy_demand(self):
+        return self.Q_(0.0, 'kWh')
 
+    def assistand_energy_demand(self):
+        return self.Q_(0.0, 'kWh')
+    
+    def total_energy_demand(self):
+        return self.minimum_energy_demand() + self.loss_energy_demand() + self.assistand_energy_demand()
+
+class forming_process(Process_Operation):
+    def __init__(self, params, ureg: UnitRegistry = UnitRegistry(), name:str=None) -> None:
+        super().__init__(params, ureg, name)
+
+    @staticmethod
+    def get_cls_information():
+        cls_info = {
+            'metadata': {
+                'cls_name': 'forming_process',
+                'display_name': 'Forming process',
+                'description_text': 'Basic operation to describe mechanical operations like press and pull',
+            },
+            'parameter_list': [
+                {'name': 'json_file', 'description': '.json-file containing timeseries data', 'default_value': 'input_data.json', 'mandatory': True},
+                {'name': 'press_compressive_strength', 'description': '.', 'default_value': 335, 'dtype': 'float', 'mandatory': False},
+                {'name': 'press_area', 'description': 'Surface Area of the press (mm^2).', 'default_value': 2410335.18, 'dtype': 'float', 'mandatory': False},
+                {'name':'press_s', 'description': ' ', 'default_value': 78, 'dtype': 'float', 'mandatory': False},
+                {'name': 'pull_tensile_strength', 'description': '', 'default_value': 200, 'mandatory': False},
+                {'name': 'pull_area', 'description': '', 'default_value': 500, 'dtype': 'float', 'mandatory': False},
+                {'name': 'pull_s', 'description': '', 'default_value': 0.655, 'dtype': 'float', 'mandatory': False},
+                {'name': 'T_ambient', 'description': 'Ambient temperature (°C)', 'default_value': 25, 'dtype': 'float', 'mandatory': False},
+                {'name': 'T_sky', 'description': 'Sky temperature (in °C). If unknown, the ambient temperature is used.', 'default_value': None, 'dtype': 'float | None', 'mandatory': False},
+                {'name': 'epsilon', 'description': 'Emission factor for thermal radiation (float between 0.0 and 1.0)', 'default_value': 0.1, 'dtype': 'float', 'mandatory': False},
+                {'name': 'eta_el', 'description': 'Efficiency of heating elements (float between 0.0 and 1.0)', 'default_value': 0.7, 'dtype': 'float', 'mandatory': False},
+            ],
+        }
+        return cls_info
+    
+    def _parse_params(self, params) -> None:
+        self.params = params
+        # Parse from input_data if needed (already loaded)
+        
+        self.params = {
+            'press_compressive_strength': input_data['parameters'].get('press_compressive_strength', {}).get('value', 335),
+            'press_area': input_data['parameters'].get('press_area', {}).get('value', 2410335.18),
+            'press_s': input_data['parameters'].get('press_s', {}).get('value', 78),
+            'pull_tensile_strength': input_data['parameters'].get('pull_tensile_strength', {}).get('value', 200),
+            'pull_area': input_data['parameters'].get('pull_area', {}).get('value', 500),
+            'pull_s': input_data['parameters'].get('pull_s', {}).get('value', 0.655),
+        }
     def press(self):
-        compressive_strength = 335  # Default value for compressive strength from Excel sheet.
-        area = 2410335.18  # Default value for area from Excel sheet.
-        s_d = 10
 
-        # Step 2: Get the user input for the parameter
-        s_u = float(input("Enter the value for 's' (thickness reduction/strain): "))
-        area_u = float(input("Enter the value for 'a' (area): "))
-        cs_u = float(input("Enter the value for 'c' (compressive strength): "))
+        compressive_strength = self.Q_(self._get_param('press_compressive_strength')['value'], 'Pa')
+        press_area = self.Q_(self._get_param('press_area')['value'], 'm**2')
+        s_d = self.Q_(self._get_param('press_s_d')['value'], 'm')
 
-        def calculate_w(c, a, s):
-            # Step 1: Perform the calculation W = compressive_strength * area * s
-            return c * a * s
-            # Step 2: Return the calculated result
-
-
-        w = calculate_w(compressive_strength, area, s_d)
-        w_u = calculate_w(cs_u, area_u, s_u)
-
-        print("The default value of W is " + str(w))
-        print("The user defined value of W is " + str(w_u))
+        w = compressive_strength * press_area * s_d
+        w_in_kwh = w.to('kWh')
+        print(f"The calculated work for the press process is: {w_in_kwh}")
+        return w_in_kwh
 
     def pull(self):
-        tensile_strength = 200  # Default value for tensile strength
-        area = 10  # Default value for area
-        s_d = 10
+        tensile_strength = self.Q_(self._get_param('pull_tensile_strength'), 'Pa')
+        pull_area = self.Q_(self._get_param('pull_area'), 'm**2')
+        s_d = self.Q_(self._get_param('pull_s_d'), 'm')
 
-        # Step 2: Get the user input for the parameter
-        s_u = float(input("Enter the value for 's' (thickness reduction/strain): "))
-        area_u = float(input("Enter the value for 'a' (area): "))
-        ts_u = float(input("Enter the value for 'c' (tensile strength): "))
-
-        def calculate_w(ts, a, s):
-            # Step 1: Perform the calculation W = compressive_strength * area * s
-            return ts * a * s
-            # Step 2: Return the calculated result
-
-        w = calculate_w(tensile_strength, area, s_d)
-        wp_u = calculate_w(ts_u, area_u, s_u)
-
-        print("The default value of W is " + str(w))
-        print("The user defined value of W is " + str(wp_u))
-
-
-class Lop:
-
-    def __init__(self, num_stages):
-        self.num_stages = num_stages
-        self.pipe_lengths = []
-        self.inner_diameters = []
-        self.friction_factors = []
-        self.local_resistance_factors = []
-        self.valve_areas = []
-        self.flow_coefficients = []
-        self.num_valves = []
-        self.oil_density = None
-        self.flow_rates = []
-        self.slider_displacements = []
-        self.stage_times = []
-        self.piston_areas = []
-
-    #Leakage loss due to the lubricating oil
-
-    def para(self):
-        b = float(input("Enter the width of the gap (b): "))
-        delta = float(input("Enter the height of the gap (clearance, δ): "))
-        delta_p = float(input("Enter the pressure difference (Δp): "))
-        mu = float(input("Enter the dynamic viscosity of oil (μ): "))
-        l = float(input("Enter the length of the gap (L): "))
-        v = float(input("Enter the velocity (v): "))
-
-        self.calculate_oil_leak(b, delta, delta_p, mu, l, v)
-
-    # Function to calculate oil leak using the given formula
-    def calculate_oil_leak(self, b, delta, delta_p, mu, l, v):
-        # First part of the equation: (b * delta^3 * delta_p) / (12 * mu * L)
-        term1 = (b * delta ** 3 * delta_p) / (12 * mu * l)
-
-        # Second part of the equation: (b * delta * v) / 2
-        term2 = (b * delta * v) / 2
-
-        # Oil leak rate (q)
-        q = term1 - term2
-
-        # Print the result
-        print(f"The oil leak rate is: {q:.6f}")
-
-        #Leaking power loss
-        p = delta_p * q
-
-        # Print the result
-        print(f"The power loss due to leaking oil is: {p:.6f}")
-
-        #Pressure loss in the Hydraulic pressure
-
-    def hp_para(self):
-        self.oil_density = float(input("Enter the oil density (kg/m^3): "))
-        for j in range(self.num_stages):
-            print(f"Enter data for stage {j + 1}:")
-            self.pipe_lengths.append(float(input(f"Pipe length (L) for stage {j + 1} (m): ")))
-            self.inner_diameters.append(float(input(f"Inner diameter (d) for stage {j + 1} (m): ")))
-            self.friction_factors.append(float(input(f"Friction loss factor (λ) for stage {j + 1}: ")))
-            self.local_resistance_factors.append(float(input(f"Local resistance factor (ζ) for stage {j + 1}: ")))
-            self.num_valves.append(int(input(f"Number of valves (b_j) for stage {j + 1}: ")))
-            self.valve_areas.append(float(input(f"Valve area (A_0) for stage {j + 1} (m^2): ")))
-            self.flow_coefficients.append(float(input(f"Flow coefficient (C_d) for stage {j + 1}: ")))
-            self.piston_areas.append(float(input(f"Piston area (A_j) for stage {j + 1} (m^2): ")))
-            self.slider_displacements.append(float(input(f"Slider displacement (l_j) for stage {j + 1} (m): ")))
-            self.stage_times.append(float(input(f"Time for stage (t_j) for stage {j + 1} (s): ")))
-
-    def calculate_flow_rate(self, j):
-        # Calculate the flow rate q_j for stage j
-        return self.piston_areas[j] * self.slider_displacements[j] / self.stage_times[j]
-
-    def calculate_velocity(self, j, q_j):
-        # Calculate the average flow velocity v_j for stage j
-        A_pipe = 3.14159 * (self.inner_diameters[j] / 2) ** 2  # Cross-sectional area of the pipe
-        return q_j / A_pipe
-
-    def calculate_piping_loss(self, j, v_j):
-        # Calculate the pressure loss in the piping components Δp for stage j
-        friction_loss = (self.friction_factors[j] * self.pipe_lengths[j] * self.oil_density * v_j ** 2) / (
-                    2 * self.inner_diameters[j])
-        local_resistance_loss = (self.local_resistance_factors[j] * self.oil_density * v_j ** 2) / 2
-        return friction_loss + local_resistance_loss
-
-    def calculate_valve_loss(self, j, q_j):
-        # Calculate the pressure loss in the valve components Δp for stage j
-        return (self.oil_density / 2) * (q_j / (self.flow_coefficients[j] * self.valve_areas[j])) ** 2
-
-    def calculate_pressure_loss(self):
-        total_loss = 0
-        for j in range(self.num_stages):
-            # Step 1: Calculate the flow rate q_j for stage j
-            q_j = self.calculate_flow_rate(j)
-
-            # Step 2: Calculate the average velocity v_j for stage j
-            v_j = self.calculate_velocity(j, q_j)
-
-            # Step 3: Calculate the piping loss Δp for stage j
-            piping_loss = self.calculate_piping_loss(j, v_j)
-
-            # Step 4: Calculate the valve loss Δp for stage j
-            valve_loss = self.calculate_valve_loss(j, q_j)
-
-            # Step 5: Sum the total loss for stage j
-            total_loss += piping_loss + self.num_valves[j] * valve_loss
-
-        return total_loss
-
-if __name__ == "__main__":
-    ppm = Ppm("forming", "curing")
-    ppm.display_process()
-    # Create an instance of BasicOperation class
-    basic_op = Bop("press", "pull")
-    basic_op.display_process_1()
-    # Call the press method to calculate W and print it
-    basic_op.press()
-    basic_op.pull()
-
-    num_stages = int(input("Enter the number of stages in the hydraulic circuit: "))
-    lop = Lop(num_stages)
-    lop.para()
-    lop.hp_para()
-    total_pressure_loss = lop.calculate_pressure_loss()
-    print(f"Total Pressure Loss in the Hydraulic Circuit: {total_pressure_loss:.2f} Pa")
+        w = tensile_strength * pull_area * s_d
+        w_in_kwh = w.to('kWh')
+        print(f"The calculated work for the pull process is: {w_in_kwh}")
+        return w_in_kwh
 
 
 
+ 
 
 
 

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34f7c6f2-484e-40c6-9336-f70458bf4761" name="Changes" comment="comments added">
+    <list default="true" id="34f7c6f2-484e-40c6-9336-f70458bf4761" name="Changes" comment="pressure loss in HP">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/est.py" beforeDir="false" afterPath="$PROJECT_DIR$/est.py" afterDir="false" />
     </list>
@@ -93,7 +93,15 @@
       <option name="project" value="LOCAL" />
       <updated>1727646658167</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="pressure loss in HP">
+      <option name="closed" value="true" />
+      <created>1728159818098</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1728159818098</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -111,6 +119,7 @@
     <MESSAGE value="new changes" />
     <MESSAGE value="test 2 and 3" />
     <MESSAGE value="comments added" />
-    <option name="LAST_COMMIT_MESSAGE" value="comments added" />
+    <MESSAGE value="pressure loss in HP" />
+    <option name="LAST_COMMIT_MESSAGE" value="pressure loss in HP" />
   </component>
 </project>
