@@ -1,11 +1,11 @@
 {
     "parameters": {
         "press_compressive_strength": {
-            "value": 335,
+            "value": "335",
             "description": "Compressive strength of the press."
         },
         "press_area": {
-            "value": 2410335.18,
+            "value": 10,
             "description": "Surface area of the press in mm^2."
         },
         "press_s": {
