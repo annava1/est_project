@@ -24,22 +24,104 @@
             "value": 0.655,
             "description": "Some displacement or distance parameter for pulling."
         },
-        "T_ambient": {
-            "value": 25,
-            "description": "Ambient temperature in °C."
-        },
-        "T_sky": {
-            "value": null,
-            "description": "Sky temperature in °C; if unknown, the ambient temperature is used."
-        },
-        "epsilon": {
+        "gap_b": {
             "value": 0.1,
-            "description": "Emission factor for thermal radiation (float between 0.0 and 1.0)."
+            "description": "Gap width in meters."
         },
-        "eta_el": {
-            "value": 0.7,
-            "description": "Efficiency of heating elements (float between 0.0 and 1.0)."
-        }
+        "delta": {
+            "value": 0.001,
+            "description": "Oil film thickness in meters."
+        },
+        "delta_p": {
+            "value": 100000,
+            "description": "Pressure difference in Pascals."
+        },
+        "mu": {
+            "value": 0.1,
+            "description": "Dynamic viscosity of the oil in Pa·s."
+        },
+        "l": {
+            "value": 1,
+            "description": "Length in meters."
+          },
+        "v": {
+            "value": 0.01,
+            "description": "Flow velocity in m/s."
+          },
+          
+        "num_stages": {
+            "value": 3,
+            "description": "Number of hydraulic stages."
+          },
+        "oil_density": {
+            "value": 850,
+            "description": "Oil density in kg/m^3."
+          },
+        "pipe_lengths": {
+            "value": [1.0, 1.2, 1.5],
+            "description": "Lengths of pipes for each stage in meters."
+          },
+        "inner_diameters": {
+            "value": [0.05, 0.04, 0.03],
+            "description": "Inner diameters of pipes for each stage in meters."
+          },
+        "friction_factors": {
+            "value": [0.03, 0.04, 0.05],
+            "description": "Friction loss factors for each stage."
+          },
+        "local_resistance_factors": {
+            "value": [1.5, 1.6, 1.7],
+            "description": "Local resistance factors for each stage."
+          },
+        "num_valves": {
+            "value": [2, 3, 4],
+            "description": "Number of valves for each stage."
+          },
+        "valve_areas": {
+            "value": [0.001, 0.002, 0.003],
+            "description": "Valve areas for each stage in m^2."
+          },
+        "flow_coefficients": {
+            "value": [0.6, 0.7, 0.8],
+            "description": "Flow coefficients for each stage."
+          },
+        "piston_areas": {
+            "value": [0.01, 0.02, 0.03],
+            "description": "Piston areas for each stage in m^2."
+          },
+        "slider_displacements": {
+            "value": [0.05, 0.06, 0.07],
+            "description": "Slider displacements for each stage in meters."
+          },
+        "stage_times": {
+            "value": [10, 15, 20],
+            "description": "Stage times for each stage in seconds."
+          },
+          
+        "t_ins": {
+            "value": 5,
+            "description": "Insertion time in seconds."
+          },
+        "t_close": {
+            "value": 10,
+            "description": "Closing time in seconds."
+          },
+        "t_form": {
+            "value": 15,
+            "description": "Forming time in seconds."
+          },
+        "t_cur": {
+            "value": 20,
+            "description": "Curing time in seconds."
+          },
+        "t_open": {
+            "value": 10,
+            "description": "Opening time in seconds."
+          },
+        "t_take": {
+            "value": 5,
+            "description": "Taking time in seconds."
+          }
     }
 }
 
